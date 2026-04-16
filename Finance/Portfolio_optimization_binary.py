@@ -3,7 +3,7 @@ import pennylane as qml
 import numpy as np
 from pennylane import numpy as nppl
 from collections import Counter
-class PortfolioOptimization:
+class PortfolioOptimization_Binary:
     """
     Portfolio Optimization formulated as a QUBO problem and solved using QAOA.
 
@@ -27,7 +27,7 @@ class PortfolioOptimization:
         QUBO Hamiltonian.
     """
     
-    def __init__(self, n, mu=None, Sigma=None, lam=1.0):
+    def __init__(self, mu, Sigma, lam=1.0):
         """
         Initialize the portfolio optimization problem.
 
@@ -42,7 +42,7 @@ class PortfolioOptimization:
         lam : float, optional
             Risk-return tradeoff parameter (default is 1.0).
         """
-        self.n = n
+        self.n = mu.size
         self.mu = mu
         self.Sigma = Sigma
         self.lam = lam

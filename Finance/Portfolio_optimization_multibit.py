@@ -5,8 +5,8 @@ from pennylane import numpy as nppl
 from collections import Counter
 
 class PortfolioOptimization_Multibit:
-    def __init__(self, n, m=5, mu=None, Sigma=None, lam=1.0):
-        self.n = n
+    def __init__(self,mu, Sigma, m=5, lam=1.0):
+        self.n = mu.size
         self.m = m
         self.mu = mu
         self.Sigma = Sigma
