@@ -3,6 +3,8 @@ import pennylane as qml
 import numpy as np
 from pennylane import numpy as nppl
 from collections import Counter
+import networkx as nx
+
 class PortfolioOptimization_Binary:
     """
     Portfolio Optimization formulated as a QUBO problem and solved using QAOA.
@@ -27,7 +29,7 @@ class PortfolioOptimization_Binary:
         QUBO Hamiltonian.
     """
     
-    def __init__(self, mu, Sigma, lam=1.0):
+    def __init__(self, n, mu=None, Sigma=None, lam=1.0):
         """
         Initialize the portfolio optimization problem.
 
@@ -42,7 +44,7 @@ class PortfolioOptimization_Binary:
         lam : float, optional
             Risk-return tradeoff parameter (default is 1.0).
         """
-        self.n = mu.size
+        self.n = n
         self.mu = mu
         self.Sigma = Sigma
         self.lam = lam
@@ -52,6 +54,7 @@ class PortfolioOptimization_Binary:
         
         # compiled model caches
         self._compiled = False
+        self.model = None
         self.index = None
         self.h = None
         self.J = None
@@ -162,6 +165,7 @@ class PortfolioOptimization_Binary:
 
         slack = sum((2**k)*z[k] for k in range(n_slack))
         return P* (s+ slack -K)**2
+        
     def add_sector_constraint(self, sector_constraints, method="slack", P=10):
         """
         Add sector-level constraints to the portfolio optimization model.
@@ -219,27 +223,39 @@ class PortfolioOptimization_Binary:
         self._compiled = False
 
     # =========================
-    # Compilation layer (CRITICAL FIX)
+    # Compilation layer
     # =========================
     def _compile(self):
-        model = self.H_pyqubo.compile()
-        self.h, self.J, self.offset = model.to_ising()
-
-        # collect ALL variables (including slack)
-        all_vars = set(self.h.keys())
-        for (v1, v2) in self.J.keys():
-            all_vars.add(v1)
-            all_vars.add(v2)
-        # --- enforce ordering ---
-        asset_vars = [f"x[{i}]" for i in range(self.n) if f"x[{i}]" in all_vars]
-        slack_vars = sorted(v for v in all_vars if v not in asset_vars)
-        ordered_vars = asset_vars + slack_vars
-
-        self.index = {v: i for i, v in enumerate(ordered_vars)}
-        self.n_wires = len(self.index)
-
+        self.model = self.H_pyqubo.compile()
         self._compiled = True
-            
+        self.n_wires = len(self.model.variables)
+        
+    # =========================
+    # Graph
+    # =========================               
+
+
+    def build_graph(self):
+        if not self._compiled:
+            self._compile()
+        qubo, offset = self.model.to_qubo()
+        G = nx.Graph()
+        for (i, j), w in qubo.items():
+            if i == j:
+                G.add_node(i, bias=w)
+            else:
+                G.add_edge(i, j, weight=w)
+        
+        pos = nx.spring_layout(G)
+        nx.draw(G, pos, with_labels=True)
+        edge_labels = nx.get_edge_attributes(G, 'weight')
+        # Format in scientific notation with 3 decimals
+        formatted_edge_labels = {
+            edge: f"{weight:.3e}" for edge, weight in edge_labels.items()
+        }
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=formatted_edge_labels)
+        return G
+        
     # =========================
     # Hamiltonian
     # =========================   
@@ -255,7 +271,21 @@ class PortfolioOptimization_Binary:
         """
         if not self._compiled:
             self._compile()
+        self.h, self.J, self.offset = self.model.to_ising()
 
+        # collect ALL variables (including slack)
+        all_vars = set(self.h.keys())
+        for (v1, v2) in self.J.keys():
+            all_vars.add(v1)
+            all_vars.add(v2)
+        # --- enforce ordering ---
+        asset_vars = [f"x[{i}]" for i in range(self.n) if f"x[{i}]" in all_vars]
+        slack_vars = sorted(v for v in all_vars if v not in asset_vars)
+        ordered_vars = asset_vars + slack_vars
+
+        self.index = {v: i for i, v in enumerate(ordered_vars)}
+        self.n_wires = len(self.index)
+        
         coeffs = []
         ops = []
 

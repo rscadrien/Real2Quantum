@@ -3,6 +3,7 @@ from pyqubo import Array
 import numpy as np
 from pennylane import numpy as nppl
 from collections import Counter
+import networkx as nx
 
 class PortfolioOptimization_Multibit:
     def __init__(self,mu, Sigma, m=5, lam=1.0):
@@ -21,6 +22,7 @@ class PortfolioOptimization_Multibit:
 
         # compiled model caches
         self._compiled = False
+        self.model = None
         self.index = None
         self.h = None
         self.J = None
@@ -115,12 +117,57 @@ class PortfolioOptimization_Multibit:
 
         self.H_pyqubo += P_turnover * sum((w[i] - w_old[i])**2 for i in range(self.n))
         self._compiled = False
+
     # =========================
     # Compilation layer
     # =========================
+
     def _compile(self):
-        model = self.H_pyqubo.compile()
-        self.h, self.J, self.offset = model.to_ising()
+        self.model = self.H_pyqubo.compile()
+        self.n_wires = len(self.model.variables)
+        self._compiled = True
+
+    # =========================
+    # Graph
+    # =========================               
+
+    def build_graph(self):
+        if not self._compiled:
+            self._compile()
+        qubo, offset = self.model.to_qubo()
+        G = nx.Graph()
+        for (i, j), w in qubo.items():
+            if i == j:
+                G.add_node(i, bias=w)
+            else:
+                G.add_edge(i, j, weight=w)
+        
+        pos = nx.spring_layout(G)
+        nx.draw(G, pos, with_labels=True)
+        edge_labels = nx.get_edge_attributes(G, 'weight')
+        # Format in scientific notation with 3 decimals
+        formatted_edge_labels = {
+            edge: f"{weight:.3e}" for edge, weight in edge_labels.items()
+        }
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=formatted_edge_labels)
+        return G
+
+    # =========================
+    # Hamiltonian
+    # =========================  
+     
+    def build_hamiltonian(self):
+        """
+        Compile the QUBO model and convert it into a PennyLane Hamiltonian.
+
+        Returns
+        -------
+        qml.Hamiltonian
+            Ising Hamiltonian corresponding to the QUBO.
+        """
+        if not self._compiled:
+            self._compile()
+        self.h, self.J, self.offset = self.model.to_ising()
 
         # collect ALL variables (including slack)
         all_vars = set(self.h.keys())
@@ -143,23 +190,6 @@ class PortfolioOptimization_Multibit:
         self.index = {v: i for i, v in enumerate(ordered_vars)}
         self.n_wires = len(self.index)
 
-        self._compiled = True
-
-    # =========================
-    # Hamiltonian
-    # =========================   
-    def build_hamiltonian(self):
-        """
-        Compile the QUBO model and convert it into a PennyLane Hamiltonian.
-
-        Returns
-        -------
-        qml.Hamiltonian
-            Ising Hamiltonian corresponding to the QUBO.
-        """
-        if not self._compiled:
-            self._compile()
-
         coeffs = []
         ops = []
 
@@ -178,6 +208,10 @@ class PortfolioOptimization_Multibit:
         inv_index = {i: v for v, i in self.index.items()}
         for i in range(self.n_wires):
             print(i, inv_index[i])
+
+    # =========================
+    # QAOA circuit
+    # ========================= 
     
     def _build_mixer(self):
         """
@@ -197,6 +231,7 @@ class PortfolioOptimization_Multibit:
         ops = [qml.PauliX(i) for i in range(self.n_wires)]
 
         return qml.Hamiltonian(coeffs, ops) 
+    
     def qaoa_circuit(self, dev, p):
         """
         Construct the QAOA circuit.
@@ -230,6 +265,10 @@ class PortfolioOptimization_Multibit:
             return qml.expval(H)
 
         return circuit
+
+    # =========================
+    # Solver
+    # ========================= 
 
     def solver(self, p, dev ="default.qubit", optimizer=None, 
                steps=100, init_params=None, num_samples=1000):
