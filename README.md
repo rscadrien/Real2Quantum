@@ -1,4 +1,5 @@
 # Real2Quantum v0.1
+## Introduction
 **Real2Quantum** is a package designed to make quantum computing more accessible for a wide range of applications.
 It provides implementations of various optimization problems, with version v0.1 focusing on finance use cases such as portfolio optimization and risk minimization.
 Future releases aim to expand into additional domains, including logistics, transportation, and energy distribution.
@@ -6,7 +7,18 @@ Real2Quantum is designed for the PennyLane framework. However, it can be useful 
 
 With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian.
 
-For example, consider the portfolio optimization problem. It is simply defined by the number of assets, the expected returns, the covariance matrix, and a risk–return trade-off parameter:
+## Installation
+1. Clone this repository:
+```bash
+git clone https://github.com/rscadrien/Real2Quantum.git
+```
+2. Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+## How to use it
+We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  It is simply defined by the number of assets, the expected returns, the covariance matrix, and a risk–return trade-off parameter:
 
 ```bash
 #Defining parameters
@@ -50,3 +62,6 @@ p=3 #Number of QAOA layer
 Solution = PFO_test.solver(p)
 ```
 The other implemented problems (risk minimization and the multibit variations) follows the same structure than PortfolioOptimization_Binary. 
+
+## License
+MIT Licence
