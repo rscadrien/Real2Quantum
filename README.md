@@ -63,5 +63,48 @@ Solution = PFO_test.solver(p)
 ```
 The other implemented problems (risk minimization and the multibit variations) follows the same structure than PortfolioOptimization_Binary. 
 
+## How to contribute to Real2Quantum
+Real2Quantum is flexible enough to make it easy for anyone to create a new optimization problem for quantum computing. In the current version, there are two parent classes, QUBOProblem_Binary and QUBOProblem_Multibit, which contain common methods such as building the graph, constructing the Hamiltonian, and solving the problem using the QAOA algorithm.
+
+To define a new problem, you only need to specify how to build the objective function and how to add constraints. For example, for portfolio optimization:
+```bash
+class PortfolioOptimization_Binary(QUBOProblem_Binary):
+
+    def __init__(self, n, mu, Sigma, lam=1.0):
+        self.n = n
+        self.mu = mu
+        self.Sigma = Sigma
+        self.lam = lam
+
+        super().__init__()  # calls _build_objective()
+
+    def _build_objective(self):
+        self.H_pyqubo += sum(
+            self.Sigma[i, j] * self.x[i] * self.x[j]
+            for i in range(self.n)
+            for j in range(self.n)
+        )
+        self.H_pyqubo += -self.lam * sum(
+            self.mu[i] * self.x[i] for i in range(self.n)
+        )
+
+    def add_budget_constraint(self, P, K):
+        """
+        Add a budget constraint enforcing exactly K selected assets.
+
+        Constraint: (sum(x_i) - K)^2
+
+        Parameters
+        ----------
+        P : float
+            Penalty strength.
+        K : int
+            Desired number of selected assets.
+        """
+        self.H_pyqubo += P * (sum(self.x[i] for i in range(self.n))-K)**2
+        self._compiled = False
+# + others constraints
+```
+Real2Quantum aims to be an open-source project. Contributions are welcome—feel free to improve it by adding new types of problems, new constraints, or new methods to the parent classes.
 ## License
 MIT Licence
