@@ -39,13 +39,23 @@ class QUBOProblem_Binary(ABC):
         
     # =========================
     # Graph
-    # =========================               
+    # =========================
 
-
-    def build_graph(self):
+    def get_qubo(self):
         if not self._compiled:
             self._compile()
         qubo, offset = self.model.to_qubo()
+        return qubo, offset
+    
+    def get_ising(self):
+        if not self._compiled:
+            self._compile()
+        h, J, offset = self.model.to_ising()
+        return h, J, offset
+
+
+    def build_graph(self):
+        qubo, offset = self.get_qubo()
         G = nx.Graph()
         for (i, j), w in qubo.items():
             if i == j:
@@ -76,10 +86,7 @@ class QUBOProblem_Binary(ABC):
         qml.Hamiltonian
             Ising Hamiltonian corresponding to the QUBO.
         """
-        if not self._compiled:
-            self._compile()
-        self.h, self.J, self.offset = self.model.to_ising()
-
+        self.h, self.J, self.offset = self.get_ising()
         # collect ALL variables (including slack)
         all_vars = set(self.h.keys())
         for (v1, v2) in self.J.keys():

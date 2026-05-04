@@ -54,15 +54,25 @@ class QUBOProblem_multibit(ABC):
         self.model = self.H_pyqubo.compile()
         self.n_wires = len(self.model.variables)
         self._compiled = True
+    
+    def get_qubo(self):
+        if not self._compiled:
+            self._compile()
+        qubo, offset = self.model.to_qubo()
+        return qubo, offset
+    
+    def get_ising(self):
+        if not self._compiled:
+            self._compile()
+        h, J, offset = self.model.to_ising()
+        return h, J, offset
 
     # =========================
     # Graph
     # =========================               
 
     def build_graph(self):
-        if not self._compiled:
-            self._compile()
-        qubo, offset = self.model.to_qubo()
+        qubo, offset = self.get_qubo()
         G = nx.Graph()
         for (i, j), w in qubo.items():
             if i == j:
@@ -93,9 +103,7 @@ class QUBOProblem_multibit(ABC):
         qml.Hamiltonian
             Ising Hamiltonian corresponding to the QUBO.
         """
-        if not self._compiled:
-            self._compile()
-        self.h, self.J, self.offset = self.model.to_ising()
+        self.h, self.J, self.offset = self.get_ising()
 
         # collect ALL variables (including slack)
         all_vars = set(self.h.keys())
