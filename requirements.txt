@@ -1,0 +1,5 @@
+pyqubo
+pennylane
+numpy
+collections
+networkx
