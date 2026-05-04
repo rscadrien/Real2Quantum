@@ -61,7 +61,6 @@ Finally, you can solve the optimization problem locally using the QAOA algorithm
 p=3 #Number of QAOA layer
 Solution = PFO_test.solver(p)
 ```
-The other implemented problems (risk minimization and the multibit variations) follows the same structure than PortfolioOptimization_Binary. 
 
 ## How to contribute to Real2Quantum
 Real2Quantum is flexible enough to make it easy for anyone to create a new optimization problem for quantum computing. In the current version, there are two parent classes, QUBOProblem_Binary and QUBOProblem_Multibit, which contain common methods such as building the graph, constructing the Hamiltonian, and solving the problem using the QAOA algorithm.
