@@ -105,6 +105,6 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         self._compiled = False
 # + others constraints
 ```
-Real2Quantum aims to be an open-source project. Contributions are welcome—feel free to improve it by adding new types of problems, new constraints, or new methods to the parent classes.
+Real2Quantum aims to be an open-source project. Contributions are welcome, feel free to improve it by adding new types of optimization problems, new constraints to the existing ones, or new methods to the parent classes.
 ## License
 MIT Licence
