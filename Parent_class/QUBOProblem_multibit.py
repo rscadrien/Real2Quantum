@@ -7,6 +7,50 @@ from collections import Counter
 import networkx as nx
 
 class QUBOProblem_multibit(ABC):
+    """
+    Abstract base class for multi-bit encoded QUBO problems.
+
+    This class provides a framework to define optimization problems where
+    each logical variable is encoded using multiple binary variables
+    (bit decomposition). The resulting QUBO formulation is constructed
+    using `pyqubo`, and can be converted to an Ising Hamiltonian suitable
+    for quantum algorithms such as QAOA.
+
+    Parameters
+    ----------
+    n : int
+        Number of logical variables.
+    m : int
+        Number of binary bits used to encode each variable.
+
+    Attributes
+    ----------
+    n : int
+        Number of logical variables.
+    m : int
+        Number of bits per variable.
+    b : pyqubo.Array
+        Binary decision variables of shape (n, m).
+    alpha : list of float
+        Normalized weights used to reconstruct real-valued variables
+        from their binary encoding.
+    H_pyqubo : pyqubo expression
+        Symbolic QUBO Hamiltonian.
+    model : pyqubo.Model or None
+        Compiled pyqubo model.
+    index : dict or None
+        Mapping from variable names to qubit indices.
+    h : dict or None
+        Linear coefficients of the Ising Hamiltonian.
+    J : dict or None
+        Quadratic coefficients of the Ising Hamiltonian.
+    offset : float or None
+        Constant offset of the Hamiltonian.
+    n_wires : int or None
+        Number of qubits required for the problem.
+    _compiled : bool
+        Whether the pyqubo model has been compiled.
+    """
     
     def __init__(self,n,m):
         self.H_pyqubo = 0
@@ -37,11 +81,36 @@ class QUBOProblem_multibit(ABC):
         pass
         
     def weights(self):
+        """
+        Construct symbolic expressions for the encoded variables.
+
+        Each logical variable is reconstructed as a weighted sum of its
+        binary representation.
+
+        Returns
+        -------
+        list
+            List of symbolic expressions representing the reconstructed
+            variables.
+        """
         return [
             sum(self.alpha[k] * self.b[i][k] for k in range(self.m))
             for i in range(self.n)
         ]
     def _bitstring_to_weights(self, bitstring):
+        """
+        Convert a measured bitstring into decoded variable values.
+
+        Parameters
+        ----------
+        bitstring : str or array-like
+            Binary string representing a sampled solution.
+
+        Returns
+        -------
+        np.ndarray
+            Array of reconstructed variable values of size (n,).
+        """
         w = np.zeros(self.n)
         for i in range(self.n):
             for k in range(self.m):
@@ -53,17 +122,45 @@ class QUBOProblem_multibit(ABC):
     # =========================
 
     def _compile(self):
+        """
+        Compile the symbolic QUBO model using pyqubo.
+
+        This step transforms the symbolic Hamiltonian into a numerical
+        model that can be converted into QUBO or Ising form.
+        """
         self.model = self.H_pyqubo.compile()
         self.n_wires = len(self.model.variables)
         self._compiled = True
     
     def get_qubo(self):
+        """
+        Retrieve the QUBO representation of the problem.
+
+        Returns
+        -------
+        dict
+            Dictionary mapping variable pairs to QUBO coefficients.
+        float
+            Constant offset of the QUBO.
+        """
         if not self._compiled:
             self._compile()
         qubo, offset = self.model.to_qubo()
         return qubo, offset
     
     def get_ising(self):
+        """
+        Retrieve the Ising representation of the problem.
+
+        Returns
+        -------
+        dict
+            Linear coefficients h of the Ising Hamiltonian.
+        dict
+            Quadratic coefficients J of the Ising Hamiltonian.
+        float
+            Constant offset of the Ising Hamiltonian.
+        """
         if not self._compiled:
             self._compile()
         h, J, offset = self.model.to_ising()
@@ -74,6 +171,17 @@ class QUBOProblem_multibit(ABC):
     # =========================               
 
     def build_graph(self):
+        """
+        Construct and visualize the QUBO interaction graph.
+
+        Nodes represent variables with associated biases, and edges
+        represent pairwise interactions.
+
+        Returns
+        -------
+        networkx.Graph
+            Graph representation of the QUBO problem.
+        """
         qubo, offset = self.get_qubo()
         G = nx.Graph()
         for (i, j), w in qubo.items():
@@ -100,10 +208,14 @@ class QUBOProblem_multibit(ABC):
         """
         Compile the QUBO model and convert it into a PennyLane Hamiltonian.
 
+        The method maps QUBO variables to qubits, separates logical and
+        auxiliary (slack) variables, and constructs the corresponding
+        Ising Hamiltonian.
+
         Returns
         -------
         qml.Hamiltonian
-            Ising Hamiltonian corresponding to the QUBO.
+            Ising Hamiltonian corresponding to the QUBO problem.
         """
         self.h, self.J, self.offset = self.get_ising()
 
@@ -143,6 +255,12 @@ class QUBOProblem_multibit(ABC):
 
         return qml.Hamiltonian(coeffs, ops)
     def print_variable_order(self):
+        """
+        Print the mapping between qubit indices and variable names.
+
+        This is useful for interpreting measurement results and debugging
+        the variable-to-qubit assignment.
+        """
         inv_index = {i: v for v, i in self.index.items()}
         for i in range(self.n_wires):
             print(i, inv_index[i])
@@ -300,7 +418,7 @@ class QUBOProblem_multibit(ABC):
         decoded_top_5 = []
         for bitstring, count in top_5:
             weights = self._bitstring_to_weights(bitstring)
-        decoded_top_5.append({
+            decoded_top_5.append({
             "bitstring": bitstring,
             "count": count,
             "weights": weights,

@@ -7,7 +7,54 @@ import networkx as nx
 from Parent_class.QUBOProblem_Binary import QUBOProblem_Binary
 
 class PortfolioOptimization_Binary(QUBOProblem_Binary):
+    """
+    QUBO formulation of the mean-variance portfolio optimization problem.
 
+    This class encodes a portfolio selection problem as a quadratic
+    unconstrained binary optimization (QUBO) problem, where each binary
+    variable x_i ∈ {0,1} indicates whether asset i is included in the portfolio.
+
+    The objective function is:
+
+        minimize   x^T Σ x  -  λ μ^T x
+
+    where:
+    - Σ is the covariance matrix (risk term)
+    - μ is the expected return vector
+    - λ controls the risk-return tradeoff
+
+    The formulation can be extended with constraints such as:
+    - Budget constraint (fixed number of selected assets)
+    - Sector constraints (soft or exact)
+
+    Parameters
+    ----------
+    n : int
+        Number of assets.
+    mu : array-like
+        Expected returns vector of shape (n,).
+    Sigma : array-like
+        Covariance matrix of shape (n, n).
+    lam : float, optional
+        Risk-return tradeoff parameter (default is 1.0).
+
+    Attributes
+    ----------
+    mu : array-like
+        Expected returns.
+    Sigma : array-like
+        Covariance matrix.
+    lam : float
+        Risk-return tradeoff parameter.
+
+    Notes
+    -----
+    - A higher λ favors high-return portfolios (more aggressive).
+    - A lower λ emphasizes risk minimization (more conservative).
+    - Constraints are added as quadratic penalties to the QUBO.
+    - Slack variables may be introduced for exact constraints, increasing
+      the number of qubits required.
+    """
     def __init__(self, n, mu, Sigma, lam=1.0):
         self.mu = mu
         self.Sigma = Sigma
@@ -16,6 +63,22 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         super().__init__(n)  # calls _build_objective()
 
     def _build_objective(self):
+        """
+        Construct the mean-variance QUBO objective function.
+
+        The objective encodes:
+
+            x^T Σ x  -  λ μ^T x
+
+        where:
+        - The quadratic term (x^T Σ x) represents portfolio risk.
+        - The linear term (μ^T x) represents expected return.
+
+        Notes
+        -----
+        This method is automatically called during initialization and
+        populates `self.H_pyqubo`.
+        """
         self.H_pyqubo += sum(
             self.Sigma[i, j] * self.x[i] * self.x[j]
             for i in range(self.n)
@@ -29,14 +92,24 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         """
         Add a budget constraint enforcing exactly K selected assets.
 
-        Constraint: (sum(x_i) - K)^2
+        The constraint is encoded as a quadratic penalty:
+
+            P * (Σ_i x_i - K)^2
+
+        which enforces that exactly K assets are selected in the solution.
 
         Parameters
         ----------
         P : float
-            Penalty strength.
+            Penalty strength. Must be large enough to enforce the constraint.
         K : int
-            Desired number of selected assets.
+            Target number of selected assets.
+
+        Notes
+        -----
+        - This is a *hard constraint* enforced via penalty.
+        - Increasing P improves feasibility but may worsen conditioning.
+        - Invalidates any previously compiled model.
         """
         self.H_pyqubo += P * (sum(self.x[i] for i in range(self.n))-K)**2
         self._compiled = False
