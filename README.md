@@ -70,13 +70,11 @@ To define a new problem, you only need to specify how to build the objective fun
 class PortfolioOptimization_Binary(QUBOProblem_Binary):
 
     def __init__(self, n, mu, Sigma, lam=1.0):
-        self.n = n
         self.mu = mu
         self.Sigma = Sigma
         self.lam = lam
-        self.x = Array.create("x", shape=self.n, vartype="BINARY")
 
-        super().__init__()  # calls _build_objective()
+        super().__init__(n)  # calls _build_objective()
 
     def _build_objective(self):
         self.H_pyqubo += sum(
