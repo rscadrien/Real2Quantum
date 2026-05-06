@@ -5,7 +5,7 @@ It provides implementations of various optimization problems, with version v0.1 
 Future releases aim to expand into additional domains, including logistics, transportation, and energy distribution.
 Real2Quantum is designed for the PennyLane framework. However, it can be useful for any quantum hardware by using the corresponding Pennylane plugin (https://pennylane.ai/devices/).
 
-With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian.
+With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian. Other options are also available, such as solving the problem using the QAOA algorithm on a PennyLane simulator.
 
 ## Installation
 1. Clone this repository:
