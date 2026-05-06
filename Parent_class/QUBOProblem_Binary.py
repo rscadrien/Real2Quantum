@@ -9,7 +9,6 @@ import networkx as nx
 class QUBOProblem_Binary(ABC):
 
     def __init__(self):
-        self.x = Array.create("x", shape=self.n, vartype="BINARY")
         self.H_pyqubo = 0
 
         # compiled model caches

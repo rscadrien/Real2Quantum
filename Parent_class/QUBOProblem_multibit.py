@@ -9,12 +9,6 @@ import networkx as nx
 class QUBOProblem_multibit(ABC):
     
     def __init__(self):
-        #binary variables
-        self.b = Array.create('b', shape=(self.n,self.m), vartype='BINARY')
-        #coefficients alpha_k = 2^{-k} (normalized)
-        self.alpha = [2**(-k) for k in range(self.m)]
-        norm = sum(self.alpha)
-        self.alpha = [a / norm for a in self.alpha]
         self.H_pyqubo = 0
         # compiled model caches
         self._compiled = False
