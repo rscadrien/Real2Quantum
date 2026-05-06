@@ -77,6 +77,18 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         super().__init__(n)  # calls _build_objective()
 
     def _build_objective(self):
+        """
+        Construct the mean-variance QUBO objective function.
+
+        The objective encodes:
+
+            x^T Σ x  -  λ μ^T x
+
+        where:
+        - The quadratic term (x^T Σ x) represents portfolio risk.
+        - The linear term (μ^T x) represents expected return.
+        """
+
         self.H_pyqubo += sum(
             self.Sigma[i, j] * self.x[i] * self.x[j]
             for i in range(self.n)
@@ -91,13 +103,6 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         Add a budget constraint enforcing exactly K selected assets.
 
         Constraint: (sum(x_i) - K)^2
-
-        Parameters
-        ----------
-        P : float
-            Penalty strength.
-        K : int
-            Desired number of selected assets.
         """
         self.H_pyqubo += P * (sum(self.x[i] for i in range(self.n))-K)**2
         self._compiled = False
