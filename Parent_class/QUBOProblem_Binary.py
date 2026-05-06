@@ -8,8 +8,10 @@ import networkx as nx
 
 class QUBOProblem_Binary(ABC):
 
-    def __init__(self):
+    def __init__(self,n):
         self.H_pyqubo = 0
+        self.n = n
+        self.x = Array.create("x", shape=self.n, vartype="BINARY")
 
         # compiled model caches
         self._compiled = False

@@ -8,18 +8,10 @@ from Parent_class.QUBOProblem_multibit import QUBOProblem_multibit
 
 class PortfolioOptimization_multibit(QUBOProblem_multibit):
     def __init__(self, n, mu, Sigma, m=5, lam=1.0):
-        self.n = n
-        self.m = m
         self.mu = mu
         self.Sigma = Sigma
         self.lam = lam
-        self.b = Array.create('b', shape=(self.n,self.m), vartype='BINARY')
-        #coefficients alpha_k = 2^{-k} (normalized)
-        self.alpha = [2**(-k) for k in range(self.m)]
-        norm = sum(self.alpha)
-        self.alpha = [a / norm for a in self.alpha]
-
-        super().__init__()  # calls _build_objective()
+        super().__init__(n,m)  # calls _build_objective()
         
     def _build_objective(self):
          w = self.weights()
