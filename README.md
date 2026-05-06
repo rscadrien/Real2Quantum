@@ -74,6 +74,7 @@ class PortfolioOptimization_Binary(QUBOProblem_Binary):
         self.mu = mu
         self.Sigma = Sigma
         self.lam = lam
+        self.x = Array.create("x", shape=self.n, vartype="BINARY")
 
         super().__init__()  # calls _build_objective()
 
