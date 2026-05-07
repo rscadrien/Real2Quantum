@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 import pennylane as qml
+from qiskit.quantum_info import SparsePauliOp
+import cirq
 from pyqubo import Array
 import numpy as np
 from pennylane import numpy as nppl
@@ -174,9 +176,9 @@ class QUBOProblem_Binary(ABC):
     # Hamiltonian
     # =========================   
     
-    def build_hamiltonian(self):
+    def build_hamiltonian(self, eco='PennyLane', offset_incl=True):
         """
-        Construct the PennyLane Hamiltonian from the Ising model.
+        Construct the Hamiltonian from the Ising model.
 
         The method:
         - Converts QUBO → Ising
@@ -207,7 +209,18 @@ class QUBOProblem_Binary(ABC):
 
         self.index = {v: i for i, v in enumerate(ordered_vars)}
         self.n_wires = len(self.index)
-        
+
+        if eco == 'PennyLane':
+            H = self._build_pennylane_hamiltonian(offset=offset_incl)
+        elif eco == 'Qiskit':
+            H = self._build_qiskit_hamiltonian(offset=offset_incl)
+        elif eco == 'Cirq':
+            H = self._build_cirq_hamiltonian(offset=offset_incl)
+        else:
+            raise ValueError(f"Unsupported ecosystem: {eco}")
+        return H
+
+    def _build_pennylane_hamiltonian(self, offset=True):    
         coeffs = []
         ops = []
 
@@ -221,8 +234,66 @@ class QUBOProblem_Binary(ABC):
             coeffs.append(J_val)
             ops.append(qml.PauliZ(self.index[v1]) @ qml.PauliZ(self.index[v2]))
 
+        # offset term (identity)
+        if offset and self.offset is not None:
+            coeffs.append(self.offset)
+            ops.append(qml.Identity(0))  # Identity on any qubit
         return qml.Hamiltonian(coeffs, ops)
+    
+    def _build_qiskit_hamiltonian(self, offset=True):
+        n_qubits = self.n_wires
+        pauli_list = []
+        # --- linear terms ---
+        for var, h_val in self.h.items():
+            z_op = ['I'] * n_qubits
+            z_op[self.index[var]] = 'Z'
+            pauli_list.append((''.join(z_op), h_val))
         
+        # --- quadratic terms ---
+        for (v1, v2), J_val in self.J.items():
+            z_op = ['I'] * n_qubits
+            z_op[self.index[v1]] = 'Z'
+            z_op[self.index[v2]] = 'Z'
+            pauli_list.append((''.join(z_op), J_val))
+        
+        # If offset is needed, add it as a scalar term (identity)
+        if offset and self.offset is not None:
+            pauli_list.append(('I' * n_qubits, self.offset))
+
+        return SparsePauliOp.from_list(pauli_list)
+    
+    def _build_cirq_hamiltonian(self, offset=True):
+        n_qubits = self.n_wires
+        qubits = cirq.LineQubit.range(n_qubits)
+
+        # This will store Hamiltonian terms
+        hamiltonian = []
+        # -----------------------------
+        # 4. Linear terms: h_i Z_i
+        # -----------------------------
+        for var, h_val in self.h.items():
+            # Create a Pauli Z acting on a single qubit
+            pauli = cirq.PauliString(
+                {qubits[self.index[var]]: cirq.Z}
+            )
+            hamiltonian.append(h_val * pauli)
+        # -----------------------------
+        # 5. Quadratic terms: J_ij Z_i Z_j
+        # -----------------------------
+        for (v1, v2), J_val in self.J.items():
+            # Create a Pauli Z acting on both qubits
+            pauli = cirq.PauliString(
+                {qubits[self.index[v1]]: cirq.Z, 
+                 qubits[self.index[v2]]: cirq.Z}
+            )
+            hamiltonian.append(J_val * pauli)
+        
+        # Add offset as a scalar term if needed
+        if offset and self.offset is not None:
+            hamiltonian.append(self.offset * cirq.PauliString())
+
+        return hamiltonian
+
     def print_variable_order(self):
         """
         Print the mapping between qubit indices and variables.
