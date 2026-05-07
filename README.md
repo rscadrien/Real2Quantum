@@ -3,7 +3,7 @@
 **Real2Quantum** is a package designed to make quantum computing more accessible for a wide range of applications.
 It provides implementations of various optimization problems, with version v0.1 focusing on finance use cases such as portfolio optimization and risk minimization.
 Future releases aim to expand into additional domains, including logistics, transportation, and energy distribution.
-Real2Quantum is framework-agnostic and can generate the Hamiltonian in Pennylane, Qiskit and Cirq.
+Real2Quantum is framework-agnostic and can generate the Hamiltonian in Pennylane, Qiskit, Cirq and D-wave format.
 
 With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian. Other options are also available, such as solving the problem using the QAOA algorithm on a PennyLane simulator.
 
@@ -48,7 +48,7 @@ PFO_test.add_budget_constraint(P,K)
 
 When the problem is defined and all constraints are included, you can derive the Hamiltonian of your problem. This Hamiltonian can then be used in your preferred quantum optimization algorithms (e.g., Grover’s algorithm, QAOA, etc.).
 
-By setting the eco option, you can choose between different frameworks: PennyLane (default), Qiskit, or Cirq.
+By setting the eco option, you can choose between different frameworks: PennyLane (default), Qiskit, Cirq  or D-Wave.
 
 for Pennylane:
 ```bash
@@ -61,6 +61,10 @@ H = PFO_test.build_hamiltonian(eco = 'Qiskit')
 for Cirq
 ```bash
 H = PFO_test.build_hamiltonian(eco = 'Cirq')
+```
+for D-wave
+```bash
+h_dwave, J_dwave, offset_dwave = PFO_test.build_hamiltonian(eco = 'DWave')
 ```
 By default, the offset is included in the Hamiltonian. You can exclude it by setting offset_incl=False.
 
