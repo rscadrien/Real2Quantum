@@ -246,6 +246,8 @@ class QUBOProblem_multibit(ABC):
             H = self._build_qiskit_hamiltonian(offset=offset_incl)
         elif eco == 'Cirq':
             H = self._build_cirq_hamiltonian(offset=offset_incl)
+        elif eco == 'DWave':
+            H = self._build_dwave_hamiltonian(offset=offset_incl)        
         else:
             raise ValueError(f"Unsupported ecosystem: {eco}")
         return H
@@ -323,6 +325,26 @@ class QUBOProblem_multibit(ABC):
             hamiltonian.append(self.offset * cirq.PauliString())
 
         return hamiltonian
+    
+    def _build_dwave_hamiltonian(self, offset=True):
+        # D-Wave expects h and J in a specific format
+        h_dwave = {}
+        for var, coeff in self.h.items():
+            h_dwave[self.index[var]] = coeff
+        
+        J_dwave = {}
+        for (v1, v2), coeff in self.J.items():
+            i = self.index[v1]
+            j = self.index[v2]
+
+            J_dwave[(i, j)] = coeff
+        
+        if offset and self.offset is not None:
+            # D-Wave does not have a direct way to include an offset in the model,
+            # but we can return it separately.
+            return h_dwave, J_dwave, self.offset
+        
+        return h_dwave, J_dwave   
 
     def print_variable_order(self):
         """
