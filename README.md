@@ -52,7 +52,7 @@ By setting the eco option, you can choose between different frameworks: PennyLan
 
 for Pennylane:
 ```bash
-H = PFO_test.build_hamiltonian(eco = 'Pennylane')
+H = PFO_test.build_hamiltonian(eco = 'PennyLane')
 ```
 for Qiskit:
 ```bash
