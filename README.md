@@ -8,13 +8,8 @@ Real2Quantum is framework-agnostic and can generate the Hamiltonian in Pennylane
 With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian. Other options are also available, such as solving the problem using the QAOA algorithm on a PennyLane simulator.
 
 ## Installation
-1. Clone this repository:
 ```bash
-git clone https://github.com/rscadrien/Real2Quantum.git
-```
-2. Install dependencies
-```bash
-pip install -r requirements.txt
+pip install real2quantum
 ```
 
 ## How to use it
