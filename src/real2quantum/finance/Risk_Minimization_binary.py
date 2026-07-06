@@ -1,4 +1,4 @@
-from Portfolio_optimization_binary import PortfolioOptimization_Binary
+from real2quantum.finance.Portfolio_optimization_binary import PortfolioOptimization_Binary
 import numpy as np
 from pyqubo import Array
 

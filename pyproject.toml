@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "real2quantum"
+authors = [
+    {name = "Adrien Devolder"}
+]
+dynamic = ["version"]
+description = "Quantum-inspired optimization and modeling framework"
+readme = "README.md"
+
+dependencies = [
+    "pyqubo",
+    "pennylane",
+    "numpy",
+    "networkx",
+    "qiskit",
+    "cirq",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "real2quantum.__version__"}
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

@@ -1,0 +1,6 @@
+pyqubo
+pennylane
+numpy
+networkx
+qiskit
+cirq

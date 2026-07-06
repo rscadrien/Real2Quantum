@@ -4,7 +4,7 @@ import numpy as np
 from pennylane import numpy as nppl
 from collections import Counter
 import networkx as nx
-from Parent_class.QUBOProblem_multibit import QUBOProblem_multibit
+from real2quantum.base.QUBOProblem_multibit import QUBOProblem_multibit
 
 class PortfolioOptimization_multibit(QUBOProblem_multibit):
     """

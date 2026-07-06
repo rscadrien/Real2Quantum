@@ -4,7 +4,7 @@ import numpy as np
 from pennylane import numpy as nppl
 from collections import Counter
 import networkx as nx
-from Parent_class.QUBOProblem_Binary import QUBOProblem_Binary
+from real2quantum.base.QUBOProblem_Binary import QUBOProblem_Binary
 
 class PortfolioOptimization_Binary(QUBOProblem_Binary):
     """
