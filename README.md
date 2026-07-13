@@ -13,7 +13,7 @@ pip install real2quantum
 ```
 
 ## How to use it
-We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  It is simply defined by the expected returns, the covariance matrix, and a risk–return trade-off parameter. The expected return and the covariance matrix can be calculated from the history of the closing prices in the stock market using the function calculate_portfolio_parameters :
+We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  The portfolio optimization problem is simply defined by the expected returns, the covariance matrix, and a risk–return trade-off parameter. The expected return and the covariance matrix can be calculated from the history of the closing prices in the stock market using the function calculate_portfolio_parameters :
 ```python
 from real2quantum.finance.preprocessing import calculate_portfolio_parameters
 import numpy as np
