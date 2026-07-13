@@ -35,7 +35,7 @@ lam = 1.0
 from real2quantum.finance.portfolio_optimization import PortfolioOptimization_Binary
 PFO_test = PortfolioOptimization_Binary(n= mu.size, mu=mu, Sigma=Sigma, lam=lam)
 ```
-This creates a PFO_test object representing the optimization problem.
+This creates a `PFO_test` object representing the optimization problem.
 
 You can then add constraints directly through class methods. For instance, if you want to invest in exactly K assets out of the n available, you can include a budget constraint:
 
@@ -44,7 +44,7 @@ K=3
 P = 5.0 # penalty parameter enforcing the constraint
 PFO_test.add_budget_constraint(P,K)
 ```
-P controls how strongly violations of the constraint are penalized. If P is too small, the optimizer may prefer a solution with a better objective value but a violated constraint. If P is very large, the constraint dominates the energy scale of the problem.
+`P` controls how strongly violations of the constraint are penalized. If `P` is too small, the optimizer may prefer a solution with a better objective value but a violated constraint. If P is very large, the constraint dominates the energy scale of the problem.
 
 When the problem is defined and all constraints are included, you can derive the Hamiltonian of your problem. This Hamiltonian can then be used in your preferred quantum optimization algorithms (e.g., Grover’s algorithm, QAOA, etc.).
 
@@ -71,7 +71,7 @@ h_dwave, J_dwave, offset_dwave = PFO_test.build_hamiltonian(eco = 'DWave')
 ```
 It returns (h, J, offset) for D-Wave-style QUBO/Ising usage.
 
-By default, the offset is included in the Hamiltonian. You can exclude it by setting offset_incl=False.
+By default, the offset is included in the Hamiltonian. You can exclude it by setting `offset_incl=False`.
 
 The translation of the real-world problem into a Hamiltonian is the main output of Real2Quantum. However, the framework also provides additional functionalities.
 
@@ -89,12 +89,12 @@ Solution = PFO_test.solver(p)
 ## How to contribute to Real2Quantum
 Real2Quantum is flexible enough to make it easy for anyone to create a new optimization problem for quantum computing. In the current version, there are two parent classes, QUBOProblem_Binary and QUBOProblem_Multibit, which contain common methods such as building the graph, constructing the Hamiltonian, and solving the problem using the QAOA algorithm.
 
-To define a new problem, here it is the following guideline:
-1. Determine the subclass of QUBO problem: QUBOProblem_Binary or QUBOProblem_Multibit
-2. Store the domain parameters in __init__.
-3. Define the objective function in _build_objective.
-4. Define the constraint methods that update self.H_pyqubo.
-5. Set self._compiled = False after modifying the Hamiltonian.
+To define a new type of optimization problems, follow these guidelines:
+1. Choose the appropriate QUBO problem subclass: `QUBOProblem_Binary` or `QUBOProblem_Multibit`
+2. Store all domain-specific parameters in the `__init__` method.
+3. Implement the objective function in  `_build_objective`.
+4. Define constraint methods that update `self.H_pyqubo`.
+5. Whenever the Hamiltonian is modified, set `self._compiled = False` to ensure recompilation.
 
  For example, for portfolio optimization:
 ```python
