@@ -8,13 +8,13 @@ Real2Quantum is framework-agnostic and can generate the Hamiltonian in Pennylane
 With Real2Quantum, you can define an optimization problem and incorporate domain-specific constraints in a natural way. The framework then automatically maps the problem into its quantum formulation by constructing the corresponding Hamiltonian. Other options are also available, such as solving the problem using the QAOA algorithm on a PennyLane simulator.
 
 ## Installation
-```bash
+```python
 pip install real2quantum
 ```
 
 ## How to use it
 We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  It is simply defined by the expected returns, the covariance matrix, and a risk–return trade-off parameter. The expected return and the covariance matrix can be calculated from the history of the closing prices in the stock market using the function calculate_portfolio_parameters :
-```bash
+```python
 from real2quantum.finance.preprocessing import calculate_portfolio_parameters
 import numpy as np
 # Example: 5 days, 3 assets
@@ -28,7 +28,7 @@ prices = np.array([
 mu, Sigma = calculate_portfolio_parameters(prices)
 ```
 
-```bash
+```python
 #Define the risk–return trade-off parameter
 lam = 1.0
 # Call the portfolio optimization
@@ -39,7 +39,7 @@ This creates a PFO_test object representing the optimization problem.
 
 You can then add constraints directly through class methods. For instance, if you want to invest in exactly K assets out of the n available, you can include a budget constraint:
 
-```bash
+```python
 K=3
 P = 5.0 # penalty parameter enforcing the constraint
 PFO_test.add_budget_constraint(P,K)
@@ -50,19 +50,19 @@ When the problem is defined and all constraints are included, you can derive the
 By setting the eco option, you can choose between different frameworks: PennyLane (default), Qiskit, Cirq  or D-Wave.
 
 for Pennylane:
-```bash
+```python
 H = PFO_test.build_hamiltonian(eco = 'PennyLane')
 ```
 for Qiskit:
-```bash
+```python
 H = PFO_test.build_hamiltonian(eco = 'Qiskit')
 ```
 for Cirq
-```bash
+```python
 H = PFO_test.build_hamiltonian(eco = 'Cirq')
 ```
 for D-wave
-```bash
+```python
 h_dwave, J_dwave, offset_dwave = PFO_test.build_hamiltonian(eco = 'DWave')
 ```
 By default, the offset is included in the Hamiltonian. You can exclude it by setting offset_incl=False.
@@ -71,11 +71,11 @@ The translation of the real-world problem into a Hamiltonian is the main output 
 
 You can visualize the graph corresponding to the optimization problem as follows:
 
-```bash
+```python
 Graph = PFO_test.build_graph()
 ```
 Finally, you can solve the optimization problem locally using the QAOA algorithm on a PennyLane simulator:
-```bash
+```python
 p=3 #Number of QAOA layer
 Solution = PFO_test.solver(p)
 ```
@@ -84,7 +84,7 @@ Solution = PFO_test.solver(p)
 Real2Quantum is flexible enough to make it easy for anyone to create a new optimization problem for quantum computing. In the current version, there are two parent classes, QUBOProblem_Binary and QUBOProblem_Multibit, which contain common methods such as building the graph, constructing the Hamiltonian, and solving the problem using the QAOA algorithm.
 
 To define a new problem, you only need to specify how to build the objective function and how to add constraints. For example, for portfolio optimization:
-```bash
+```python
 class PortfolioOptimization_Binary(QUBOProblem_Binary):
 
     def __init__(self, n, mu, Sigma, lam=1.0):
