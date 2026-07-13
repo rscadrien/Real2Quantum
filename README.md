@@ -89,7 +89,14 @@ Solution = PFO_test.solver(p)
 ## How to contribute to Real2Quantum
 Real2Quantum is flexible enough to make it easy for anyone to create a new optimization problem for quantum computing. In the current version, there are two parent classes, QUBOProblem_Binary and QUBOProblem_Multibit, which contain common methods such as building the graph, constructing the Hamiltonian, and solving the problem using the QAOA algorithm.
 
-To define a new problem, you only need to specify how to build the objective function and how to add constraints. For example, for portfolio optimization:
+To define a new problem, here it is the following guideline:
+1. Determine the subclass of QUBO problem: QUBOProblem_Binary or QUBOProblem_Multibit
+2. Store the domain parameters in __init__.
+3. Define the objective function in _build_objective.
+4. Define the constraint methods that update self.H_pyqubo.
+5. Set self._compiled = False after modifying the Hamiltonian.
+
+ For example, for portfolio optimization:
 ```python
 class PortfolioOptimization_Binary(QUBOProblem_Binary):
 
