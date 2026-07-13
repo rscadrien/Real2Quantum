@@ -13,22 +13,25 @@ pip install real2quantum
 ```
 
 ## How to use it
-We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  It is simply defined by the number of assets, the expected returns, the covariance matrix, and a risk–return trade-off parameter:
+We will illustrate for the portfolio optimization problem (binary version). The other implemented problems (risk minimization and the multibit variations) follows the same structure.  It is simply defined by the expected returns, the covariance matrix, and a risk–return trade-off parameter. The expected return and the covariance matrix can be calculated from the history of the closing prices in the stock market using the function calculate_portfolio_parameters :
+```bash
+from real2quantum.finance.preprocessing import calculate_portfolio_parameters
+# Example: 5 days, 3 assets
+prices = np.array([
+    [100, 50, 200],
+    [102, 51, 198],
+    [101, 52, 202],
+    [105, 51, 205],
+    [103, 53, 210]
+])
+mu, Sigma = calculate_portfolio_parameters(prices)
+```
 
 ```bash
-#Defining parameters
-n = 5  # number of assets
-
-mu = np.array([0.10, 0.12, 0.07, 0.09, 0.11])
-
-Sigma = np.array([
-    [0.10, 0.02, 0.01, 0.03, 0.02],
-    [0.02, 0.08, 0.02, 0.01, 0.03],
-    [0.01, 0.02, 0.09, 0.02, 0.01],
-    [0.03, 0.01, 0.02, 0.07, 0.02],
-    [0.02, 0.03, 0.01, 0.02, 0.06]
-])
+#Define the risk–return trade-off parameter
 lam = 1.0
+# Call the portfolio optimization
+from real2quantum.finance.portfolio_optimization import PortfolioOptimization_Binary
 PFO_test = PortfolioOptimization_Binary(n= mu.size, mu=mu, Sigma=Sigma, lam=lam)
 ```
 This creates a PFO_test object representing the optimization problem.
