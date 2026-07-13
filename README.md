@@ -53,18 +53,23 @@ for Pennylane:
 ```python
 H = PFO_test.build_hamiltonian(eco = 'PennyLane')
 ```
+It returns a PennyLane-compatible Hamiltonian.
 for Qiskit:
 ```python
 H = PFO_test.build_hamiltonian(eco = 'Qiskit')
 ```
+It returns a Qiskit-compatible representation.
 for Cirq
 ```python
 H = PFO_test.build_hamiltonian(eco = 'Cirq')
 ```
+It returns a Cirq-compatible representation.
 for D-wave
 ```python
 h_dwave, J_dwave, offset_dwave = PFO_test.build_hamiltonian(eco = 'DWave')
 ```
+It returns (h, J, offset) for D-Wave-style QUBO/Ising usage.
+
 By default, the offset is included in the Hamiltonian. You can exclude it by setting offset_incl=False.
 
 The translation of the real-world problem into a Hamiltonian is the main output of Real2Quantum. However, the framework also provides additional functionalities.
