@@ -44,6 +44,7 @@ K=3
 P = 5.0 # penalty parameter enforcing the constraint
 PFO_test.add_budget_constraint(P,K)
 ```
+P controls how strongly violations of the constraint are penalized. If P is too small, the optimizer may prefer a solution with a better objective value but a violated constraint. If P is very large, the constraint dominates the energy scale of the problem.
 
 When the problem is defined and all constraints are included, you can derive the Hamiltonian of your problem. This Hamiltonian can then be used in your preferred quantum optimization algorithms (e.g., Grover’s algorithm, QAOA, etc.).
 
