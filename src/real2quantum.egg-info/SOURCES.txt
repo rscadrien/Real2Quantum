@@ -6,11 +6,9 @@ src/real2quantum.egg-info/SOURCES.txt
 src/real2quantum.egg-info/dependency_links.txt
 src/real2quantum.egg-info/requires.txt
 src/real2quantum.egg-info/top_level.txt
-src/real2quantum/base/QUBOProblem_Binary.py
-src/real2quantum/base/QUBOProblem_multibit.py
+src/real2quantum/base/QUBOProblem.py
 src/real2quantum/base/__init__.py
-src/real2quantum/finance/Portfolio_optimization_binary.py
-src/real2quantum/finance/Portfolio_optimization_multibit.py
-src/real2quantum/finance/Risk_Minimization_binary.py
-src/real2quantum/finance/Risk_Minimization_multibit.py
 src/real2quantum/finance/__init__.py
+src/real2quantum/finance/portfolio_optimization.py
+src/real2quantum/finance/preprocessing.py
+src/real2quantum/finance/risk_minimization.py
