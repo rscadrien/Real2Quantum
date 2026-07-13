@@ -40,7 +40,7 @@ This creates a `PFO_test` object representing the optimization problem.
 You can then add constraints directly through class methods. For instance, if you want to invest in exactly K assets out of the n available, you can include a budget constraint:
 
 ```python
-K=3
+K=2
 P = 5.0 # penalty parameter enforcing the constraint
 PFO_test.add_budget_constraint(P,K)
 ```
